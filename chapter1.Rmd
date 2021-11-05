@@ -9,5 +9,9 @@
 date()
 
 ```
-The text continues here.
+I'm really excited about this course, although it seems quite challenging at the moment! All these technical details and different programs! But I'm happy to learn new things and methods, and I hope that during this course I will learn to use Git (and understand what it is..) and Rmarkdown. I have been using R for quite some time, but not so much Rstudio (and never RMarkdown).
+
+Here is address to my GitHub repository:
+
+https://github.com/jliuhanen/IODS-project
 
