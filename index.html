@@ -173,7 +173,7 @@ pre code {
 <ul>
 <li><a href="#introduction-to-open-data-science---course-project">Introduction to Open Data Science - Course Project</a></li>
 <li><a href="#about-the-project">About the project</a></li>
-<li><a href="#insert-chapter-2-title-here">Insert chapter 2 title here</a></li>
+<li><a href="#chapter-2-regression-and-model-validation">Chapter 2: Regression and model validation</a></li>
 </ul>
 </div>
 
@@ -187,14 +187,14 @@ pre code {
 <pre class="r"><code># This is a so-called &quot;R chunk&quot; where you can write R code.
 
 date()</code></pre>
-<pre><code>## [1] &quot;Fri Nov 05 09:31:27 2021&quot;</code></pre>
+<pre><code>## [1] &quot;Thu Nov 11 22:55:49 2021&quot;</code></pre>
 <p>I’m really excited about this course, although it seems quite challenging at the moment! All these technical details and different programs! But I’m happy to learn new things and methods, and I hope that during this course I will learn to use Git (and understand what it is..) and Rmarkdown. I have been using R for quite some time, but not so much Rstudio (and never RMarkdown).</p>
 <p>Here is address to my GitHub repository:</p>
 <p><a href="https://github.com/jliuhanen/IODS-project" class="uri">https://github.com/jliuhanen/IODS-project</a></p>
 <hr />
 </div>
-<div id="insert-chapter-2-title-here" class="section level1">
-<h1>Insert chapter 2 title here</h1>
+<div id="chapter-2-regression-and-model-validation" class="section level1">
+<h1>Chapter 2: Regression and model validation</h1>
 <p><em>Describe the work you have done this week and summarize your learning.</em></p>
 <ul>
 <li>Describe your work and results clearly.</li>
@@ -202,8 +202,20 @@ date()</code></pre>
 <li>Assume the reader has no previous knowledge of your data or the more advanced methods you are using.</li>
 </ul>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Fri Nov 05 09:31:28 2021&quot;</code></pre>
-<p>Here we go again…</p>
+<pre><code>## [1] &quot;Thu Nov 11 22:55:49 2021&quot;</code></pre>
+<pre class="r"><code>learning2014 &lt;- read.table(&quot;Learning2014&quot;, header=T, sep=&quot; &quot;)
+dim(learning2014)</code></pre>
+<pre><code>## [1] 166   7</code></pre>
+<pre class="r"><code>str(learning2014)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    166 obs. of  7 variables:
+##  $ gender  : chr  &quot;F&quot; &quot;M&quot; &quot;F&quot; &quot;M&quot; ...
+##  $ age     : int  53 55 49 53 49 38 50 37 37 42 ...
+##  $ attitude: int  37 31 25 35 37 38 35 29 38 21 ...
+##  $ points  : int  25 12 24 10 22 21 21 31 24 26 ...
+##  $ deep    : num  3.58 2.92 3.5 3.5 3.67 ...
+##  $ stra    : num  3.38 2.75 3.62 3.12 3.62 ...
+##  $ surf    : num  2.58 3.17 2.25 2.25 2.83 ...</code></pre>
+<p>The data set (“learning2014”) used in the following analyses is from an international survey of “Approaches to learning”, which was collected in 2014-2015. The original data contained 183</p>
 <hr />
 <p>(more chapters to be added similarly as we proceed with the course!)</p>
 </div>
