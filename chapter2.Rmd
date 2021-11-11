@@ -1,4 +1,4 @@
-# Insert chapter 2 title here
+# Chapter 2: Regression and model validation
 
 *Describe the work you have done this week and summarize your learning.*
 
@@ -8,6 +8,10 @@
 
 ```{r}
 date()
+learning2014 <- read.table("Learning2014", header=T, sep=" ")
+dim(learning2014)
+str(learning2014)
+
+
 ```
 
-Here we go again...
