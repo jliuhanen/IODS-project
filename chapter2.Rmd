@@ -8,10 +8,48 @@
 
 ```{r}
 date()
-learning2014 <- read.table("Learning2014", header=T, sep=" ")
+learning2014 <- read.table("Learning2014", header=T, sep=" ", stringsAsFactors=TRUE)
 dim(learning2014)
 str(learning2014)
 
 
 ```
+The data set ("learning2014") used in the following analyses is from an international survey of "Approaches to learning", which was collected in 2014-2015. The original data contained 183 observations on several variables, but the data set used in the following analyses contains 166 observations on 7 variables; 17 observations that had a value of 0 on the variable "points", were dropped out. The 7 variables include gender (a factor with two levels, "M" and "F"), age, attitude (reflecting global attitude towards statistics), points (exam points), and three numerical variables: deep, stra and surf, which reflect different learning strategies and attitudes (deep, surface, strategy). Deep, stra and surf have been composed of several sub-questions by taking a mean of all the relevant questions related to each of these scales.
 
+```{r}
+
+library("ggplot2")
+library("GGally")
+
+summary(learning2014)
+
+p <- ggpairs(learning2014, mapping = aes(col = gender, alpha = 0.3), lower = list(combo = wrap("facethist", bins = 20)))
+p
+```
+
+The data includes 110 women and 56 men aged 17 to 55 years (the mean of age is 25.5 years and median 22 years, the distribution of age is positively skewed.) The ranges of other variables are 14-50 (attitude), 7-33 (points), 1.58-4.92 (deep), 1.25-5.00 (stra), 1.58-4.33 (surf). None of the variables seems to have normal distributions. There are moderate correlations between the variables that are statistically significant: attitude is positively correlated with points (r = 0.44). Also the different learning strategies and attitudes, deep, stra and surf, correlate significantly with each other: surf and deep have a negative correlation (r  -0.32), and stra and surf also correlate negatively (r = -0.16). Surf and attitude also correlate negatively (r = -.18). There are no significant correlations between age and the other variables. There are some differences between men and women: in fact, surf and attitude correlate statistically significantly only in men (r = -0.37), and not in women (r = -0.02). Surf and deep also correlate actually in men (r = -0.62), but not in women (r = -0.09).
+```{r}
+my_model <- lm(points ~ attitude + stra + surf, data = learning2014)
+summary(my_model)
+```
+In a linear regression model with points as the dependent variable and attitude, stra and surf as independent variables, attitude is a statistically significant predictor of points (beta = 0.34, std error = 0.06, p = 1.93*e-08), while stra and surf are not. The estimate for intercept is 11.01 (std. error = 3.68), p = 0.003.
+```{r}
+my_model2 <- lm(points ~ attitude + stra, data = learning2014)
+summary(my_model2)
+```
+
+If surf is left out of the model, attitude is still a significant predictor of points, while stra is not.
+```{r}
+my_model3 <- lm(points ~ attitude, data = learning2014)
+summary(my_model3)
+```
+As stra is also left out of the model (as it was not a significant predictor of points), attitude is now the only predictor of points in the model. The estimate for the intercept is 11.64 (std error = 1.83), p = 1.95e-09, and the estimate for beta (attitude) is 0.35, std. error = 0.06, p = 4.12e-09. So, attitude is a significant predictor of points: when attitude is increased by one, points is increased by 0.35. The multiple R-squared of the model is 0.19, which means that 19% of the variation of points is explained by the variation of attitude.
+```{r}
+plot(my_model3, which = c(1, 2, 5))
+```
+
+A linear regression model has the following assumptions:
+1) linearity (there is a linear relationship between dependent and independent variables) 
+2) errors are normally distributed (with a mean of 0), not correlated , and have a constant variance
+
+From the residuals vs. fitted values plot we can see that the errors have a mean close to 0 and that the variance is relatively constant. From the normal Q-Q plot we can see that the errors are quite well normally distributed, because they follow the dotted line. Although, there is some deviation from the line in both ends of the theoretical predicted values. From the residuals vs. leverage plot we can see that there are no clear outliers in the data, because the Cook's distances for all residuals are very small (although they are scattered). I would say that the assumptions are adequately met.
