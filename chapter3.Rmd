@@ -2,7 +2,7 @@
 title: "Chapter 3: Logistic Regression"
 output: html_document
 ---
-
+# Chapter 3: Logistic Regression
 ```{r}
 date()
 alc <- read.table("alc", stringsAsFactors=TRUE)
@@ -37,7 +37,11 @@ summary(alc$age)
 summary(alc$famrel)
 summary(alc$health)
 ```
+
+
 The data contains 370 students, of which 111 are high-users of alcohol. There are 175 men and 195 women and they are 15 - 22 years of age. The mean age is 16.6 years. The mean of "quality of family relationships" is 3.9, and the mean of "current health status" is 3.6.
+
+
 ```{r}
 #Summary statistics grouped by alcohol consumption
 library("dplyr")
@@ -49,10 +53,12 @@ alc %>% group_by(high_use) %>% summarise(mean_age = mean(age))
 alc %>% group_by(high_use) %>% summarise(mean_famrel = mean(famrel))
 alc %>% group_by(high_use) %>% summarise(mean_health = mean(health))
 ```
+
 There are 41 out of 195 female high alcohol users and 70 out of 175 male high alcohol users, so it seems that men are more often high users than women, as was also hypothesized.
 The mean age for high users seems to be somewhat higher (16.8) than for low users (16.5), as was hypothesized.
 The score on family relations is slightly lower for high users (3.77) than for low users (4.01), as was hypothesized.
 The score on student's health was higher in the group of high users (3.73) compared to that of low users (3.49), which was quite surprising! The hypothesis was in the opposite direction: high users were hypothesized to have lower score on health than low users.
+
 ```{r}
 #Boxplots 
 library("ggplot2")
@@ -68,6 +74,7 @@ g5 <- ggplot(alc, aes(x = high_use, y = health, col = sex))
 g6 <- g5 + geom_boxplot() + ylab("health")
 g6 + ggtitle("Student health by alcohol consumption and sex")
 ```
+
 The same relationships are also shown in the boxplots, although there are some sex differences: in women high users of alcohol seem to be younger than low users, while in men high users are older, as was hypothesized. Also, the association between health and alcohol use seems to be true especially in women: women, who are high users of alcohol, score higher on the health variable, while men seem to have the same mean score on health both in high users and low users.
 
 Let's run a logistic regression analysis.
@@ -85,7 +92,44 @@ CI <- confint(m) %>% exp
 #Print out the odds ratios with their confidence intervals
 cbind(OR, CI)
 ```
+From the logistic regression analysis we can see, that three out of the four independent variables in the model are significantly associated with alcohol consumption (because the p-values related to their estimated coefficients are < 0.05). Sex, age and family relations are all significant predictors of high alcohol consumption, while health is not. Being a male and being older is associated with higher probability of high alcohol consumption, while having higher score on family relations is associated with lower probability of being a high user. From the odds ratios we can see, that men are 2.6 times more probable high users of alcohol than women. The odds ratio for age is also greater than 1 (1.3), which means that older age (in this data set) is associated with higher probability of being a high user of alcohol. The odds ratio for family relations is less than 1 (0.7), because having higher score on family relations was associated with lower probability of being a high user. The odds ratio for health is more than 1 (1.1), which means that higher scores on health are associated with higher probability of being a high user, but this variable was not a significant predictor (which can be also seen in the odds ratio confidence interval: the lower border is less than one while the upper border is over one).
 
+Exploring the predictive power of the model
 
+```{r}
+# predict the probability of high_use
+probabilities <- predict(m, type = "response")
 
+# add the predicted probabilities to 'alc'
+alc <- mutate(alc, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = probability > 0.5)
+
+# see the last ten original classes, predicted probabilities, and class predictions
+select(alc, age, famrel, health, sex, high_use, probability, prediction) %>% tail(10)
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+# initialize a plot of 'high_use' versus 'probability' in 'alc'
+g <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))
+
+# define the geom as points and draw the plot
+g + geom_point()
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction) %>% prop.table %>% addmargins
+
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# call loss_func to compute the average number of wrong predictions in the (training) data
+loss_func(class = alc$high_use, prob = alc$probability)
+```
+
+The predictive power of the model seems quite good, when we are predicting low users. From 259 students that are not high users of alcohol, the model predicts correctly 246. In the case of high users, the model does not work as well: it predicts correctly only 20 high users out of 111. This can be seen also in the graphic: in the "false" category there are clearly more red dots, which represent false predictions also by the model. But, in the "true" category, where there should have been more blue "true" dots, there is far more red dots than blue ones. In other words, the model does not predict high users very well, but it predicts quite well the low users. On average, 28% of the predictions the model makes, are false. In other words, 72% of the predictions are on average correct. So, its' working better than chance! Because by simply guessing, 50% of the predictions would be correct on average, and 50% wrong.  
 
