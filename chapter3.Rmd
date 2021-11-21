@@ -3,26 +3,89 @@ title: "Chapter 3: Logistic Regression"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+date()
+alc <- read.table("alc", stringsAsFactors=TRUE)
+colnames(alc)
+
+```
+The data used in the study is collected from two Portuguese schools, and it has been loaded from UCI Machine Learning Repository (https://archive.ics.uci.edu/ml/datasets/Student+Performance). The data has been collected from school reports and with questionnaires, and it includes information on e.g. student achievement, family, activities, and alcohol use. There is a total of 370 students and information on 36 variables in the data.
+
+Originally, there were two data sets, which provided information on two distinct subjects: mathematics and Portuguese. These data sets have been joined for this study, using common identifiers (variables that have the same values in both data sets, e.g. sex, age, address, family size etc.) The variables that had variation in the two data sets (e.g. the course grades), have been averaged.
+
+The objective of this study is to analyze students' alcohol consumption. Alcohol consumption is defined as "high" or "low", and it is based on the average on weekday and weekend consumption (both were rated on a scale from 1 = very low to 5 = very high). If the total mean of weekday and weekend consumption is more than 2, then the participant is defined as a "high" user. 
+
+The hypothesis in this study are:
+
+1) sex: men are more often high users than women
+
+2) age (ranging from 15 to 22): older students are more often high users than younger students
+
+3) quality of family relationships ("famrel", ranging from very bad 1 to excellent 5): bad family relationships are associated with high alcohol consumption
+
+4) current health status ("health", ranging from very bad 1 to very good 5):
+good health is associated with low alcohol consumption
+
+In sum, in this study we are going to study the relationship of four variables: sex, age, quality of family relationships and current health status, to alcohol consumption, defined as low/high consumption.
+
+First, let's explore the data and the distributions and relationships of these five variables in the study.
+```{r}
+#Summary statistics
+summary(alc$high_use)
+summary(alc$sex)
+summary(alc$age)
+summary(alc$famrel)
+summary(alc$health)
+```
+The data contains 370 students, of which 111 are high-users of alcohol. There are 175 men and 195 women and they are 15 - 22 years of age. The mean age is 16.6 years. The mean of "quality of family relationships" is 3.9, and the mean of "current health status" is 3.6.
+```{r}
+#Summary statistics grouped by alcohol consumption
+library("dplyr")
+#Alcohol consumption by sex
+tab <- table(alc$sex, alc$high_use)
+tab
+#Alcohol consumption by age, family relations and health
+alc %>% group_by(high_use) %>% summarise(mean_age = mean(age))
+alc %>% group_by(high_use) %>% summarise(mean_famrel = mean(famrel))
+alc %>% group_by(high_use) %>% summarise(mean_health = mean(health))
+```
+There are 41 out of 195 female high alcohol users and 70 out of 175 male high alcohol users, so it seems that men are more often high users than women, as was also hypothesized.
+The mean age for high users seems to be somewhat higher (16.8) than for low users (16.5), as was hypothesized.
+The score on family relations is slightly lower for high users (3.77) than for low users (4.01), as was hypothesized.
+The score on student's health was higher in the group of high users (3.73) compared to that of low users (3.49), which was quite surprising! The hypothesis was in the opposite direction: high users were hypothesized to have lower score on health than low users.
+```{r}
+#Boxplots 
+library("ggplot2")
+g1 <- ggplot(alc, aes(x = high_use, y = age, col = sex))
+g2 <- g1 + geom_boxplot() + ylab("age")
+g2 + ggtitle("Student age by alcohol consumption and sex")
+
+g3 <- ggplot(alc, aes(x = high_use, y = famrel, col = sex))
+g4 <- g3 + geom_boxplot() + ylab("family relations")
+g4 + ggtitle("Student family relations by alcohol consumption and sex")
+
+g5 <- ggplot(alc, aes(x = high_use, y = health, col = sex))
+g6 <- g5 + geom_boxplot() + ylab("health")
+g6 + ggtitle("Student health by alcohol consumption and sex")
+```
+The same relationships are also shown in the boxplots, although there are some sex differences: in women high users of alcohol seem to be younger than low users, while in men high users are older, as was hypothesized. Also, the association between health and alcohol use seems to be true especially in women: women, who are high users of alcohol, score higher on the health variable, while men seem to have the same mean score on health both in high users and low users.
+
+Let's run a logistic regression analysis.
+```{r}
+#Logistic regression analysis
+m <- glm(high_use ~ sex + age + famrel + health, data = alc, family = "binomial")
+summary(m)
+
+#Compute odds ratios (OR)
+OR <- coef(m) %>% exp
+
+#Compute confidence intervals (CI)
+CI <- confint(m) %>% exp
+
+#Print out the odds ratios with their confidence intervals
+cbind(OR, CI)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
