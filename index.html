@@ -188,7 +188,7 @@ pre code {
 <pre class="r"><code># This is a so-called &quot;R chunk&quot; where you can write R code.
 
 date()</code></pre>
-<pre><code>## [1] &quot;Mon Nov 22 01:10:45 2021&quot;</code></pre>
+<pre><code>## [1] &quot;Mon Nov 22 01:21:23 2021&quot;</code></pre>
 <p>I’m really excited about this course, although it seems quite challenging at the moment! All these technical details and different programs! But I’m happy to learn new things and methods, and I hope that during this course I will learn to use Git (and understand what it is..) and Rmarkdown. I have been using R for quite some time, but not so much Rstudio (and never RMarkdown).</p>
 <p>Here is address to my GitHub repository:</p>
 <p><a href="https://github.com/jliuhanen/IODS-project" class="uri">https://github.com/jliuhanen/IODS-project</a></p>
@@ -203,7 +203,7 @@ date()</code></pre>
 <li>Assume the reader has no previous knowledge of your data or the more advanced methods you are using.</li>
 </ul>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Mon Nov 22 01:10:45 2021&quot;</code></pre>
+<pre><code>## [1] &quot;Mon Nov 22 01:21:24 2021&quot;</code></pre>
 <pre class="r"><code>learning2014 &lt;- read.table(&quot;Learning2014&quot;, header=T, sep=&quot; &quot;, stringsAsFactors=TRUE)
 dim(learning2014)</code></pre>
 <pre><code>## [1] 166   7</code></pre>
@@ -316,7 +316,7 @@ summary(my_model3)</code></pre>
 <div id="chapter-3-logistic-regression" class="section level1">
 <h1>Chapter 3: Logistic Regression</h1>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Mon Nov 22 01:10:57 2021&quot;</code></pre>
+<pre><code>## [1] &quot;Mon Nov 22 01:21:34 2021&quot;</code></pre>
 <pre class="r"><code>alc &lt;- read.table(&quot;alc&quot;, stringsAsFactors=TRUE)
 colnames(alc)</code></pre>
 <pre><code>##  [1] &quot;school&quot;     &quot;sex&quot;        &quot;age&quot;        &quot;address&quot;    &quot;famsize&quot;   
@@ -452,7 +452,7 @@ cbind(OR, CI)</code></pre>
 ## age         1.25710707 1.0347423229 1.5328666
 ## famrel      0.69332056 0.5371929276 0.8909827
 ## health      1.13434220 0.9560769767 1.3527013</code></pre>
-<p>From the logistic regression analysis we can see, that three out of the four independent variables in the model are significantly associated with alcohol consumption (because the p-values related to their estimated coefficients are &lt; 0.05). Sex, age and family relations are all significant predictors of high alcohol consumption, while health is not. Being a male and being older is associated with higher probability of high alcohol consumption, while having higher score on family relations is associated with lower probability of being a high user. From the odds ratios we can see, that men are 2.6 times more probable high users of alcohol than women. The odds ratio for age is also greater than 1 (1.3), which means that older age (in this data set) is associated with higher probability of being a high user of alcohol. The odds ratio for family relations is less than 1 (0.7), because having higher score on family relations was associated with lower probability of being a high user. The odds ratio for health is more than 1 (1.1), which means that higher scores on health are associated with higher probability of being a high user, but this variable was not a significant predictor (which can be also seen in the odds ratio confidence interval: the lower border is less than one while the upper border is over one).</p>
+<p>From the logistic regression analysis we can see, that three out of the four independent variables in the model are significantly associated with alcohol consumption (because the p-values related to their estimated coefficients are &lt; 0.05). Sex, age and family relations are all significant predictors of high alcohol consumption, while health is not. Being a male and being older is associated with higher probability of high alcohol consumption, while having higher score on family relations is associated with lower probability of being a high user. From the odds ratios we can see, that men are 2.6 times more probable high users of alcohol than women. The odds ratio for age is also greater than 1 (1.3), which means that older age (in this data set) is associated with higher probability of being a high user of alcohol. The odds ratio for family relations is less than 1 (0.7), because having higher score on family relations was associated with lower probability of being a high user. The odds ratio for health is more than 1 (1.1), which means that higher scores on health are associated with higher probability of being a high user, but this variable was not a significant predictor (which can be also seen in the odds ratio confidence interval: the lower border is less than one while the upper border is over one). The results are in line with the hypothesis, except for the health variable: being a male, older age and lower scores on family relations were associated with higher probability of being a high user. It was hypothesized that also the health variable would be a significant predictor of alcohol use, but it was not. The relationship between the health variable and alcohol use was in the opposite direction than what was hypothesized, but, the association was not significant.</p>
 <p>Exploring the predictive power of the model</p>
 <pre class="r"><code># predict the probability of high_use
 probabilities &lt;- predict(m, type = &quot;response&quot;)
@@ -504,7 +504,7 @@ loss_func &lt;- function(class, prob) {
 # call loss_func to compute the average number of wrong predictions in the (training) data
 loss_func(class = alc$high_use, prob = alc$probability)</code></pre>
 <pre><code>## [1] 0.2810811</code></pre>
-<p>The predictive power of the model seems quite good, when we are predicting low users. From 259 students that are not high users of alcohol, the model predicts correctly 246. In the case of high users, the model does not work as well: it predicts correctly only 20 high users out of 111. This can be seen also in the graphic: in the “false” category there are clearly more red dots, which represent false predictions also by the model. But, in the “true” category, where there should have been more blue “true” dots, there is far more red dots than blue ones. In other words, the model does not predict high users very well, but it predicts quite well the low users. On average, 28% of the predictions the model makes, are false. In other words, 72% of the predictions are on average correct. So, its’ working better than chance! Because by simply guessing, 50% of the predictions would be correct on average, and 50% wrong.</p>
+<p>The predictive power of the model seems quite good, when we are predicting low users. From 259 students that are not high users of alcohol, the model predicts correctly 246. In the case of high users, the model does not work as well: it predicts correctly only 20 high users out of 111. This can be seen also in the graphic: in the “false” category there are clearly more red dots, which represent false predictions also by the model. But, in the “true” category, where there should have been more blue “true” dots, there is far more red dots than blue ones. In other words, the model does not predict high users very well, but it predicts quite well the low users. On average, 28% of the predictions the model makes, are false. In other words, 72% of the predictions are on average correct. So, the model is working better than chance! Because by simply guessing, 50% of the predictions would be correct on average, and 50% wrong.</p>
 </div>
 
 
