@@ -1,0 +1,184 @@
+---
+title: "Chapter 4: Clustering and classification"
+author: "Johanna Liuhanen"
+date: "23.11.2021"
+output: html_document
+---
+
+```{r}
+date()
+library("MASS")
+dim(Boston)
+str(Boston)
+```
+The Boston data set contains information about housing in the area of Boston. The variables included are for example crime rate, nitrogen oxide concentration, teacher-pupil rate, and average number of rooms per dwelling. The data has 506 observations on 14 variables. Two of the variables are integers and the rest are numeric.
+
+Let's explore the distributions and relationships between the study variables.
+
+```{r}
+library("ggplot2")
+library("GGally")
+library("corrplot")
+library("tidyr")
+#Summaries of all the study variables
+summary(Boston)
+
+#Distributions of the variables and correlations between them
+p <- ggpairs(Boston, lower = list(combo = wrap("facethist", bins = 20)))
+p
+
+#Correlations again:
+# calculate the correlation matrix and round it
+cor_matrix<-cor(Boston) %>% round(digits = 2)
+# print the correlation matrix
+cor_matrix
+#Correlation matrix visualized:
+# visualize the correlation matrix
+corrplot(cor_matrix, method="circle", type="upper", cl.pos="b", tl.pos="d", tl.cex = 0.6)
+```
+
+From the summaries and visual distributions we can see that many of the variables are very skewed. For example, the distributions of crim, zn, chas, nox, dis and lstat are positively skewed, and age, ptratio and black are negatively skewed. Some variables seem to have bimodal distributions, for example indus, rad and tax.
+
+Correlations between study variables:
+Many of the study variables correlate with each other at least modestly. Strongest positive correlations (> 0.70) are found between rad and tax (r = 0.91), indus and nox (r = 0.76), nox and age (r = 0.73), indus and tax (r = 0.72), and rm and medv (r = 0.70).
+Strongest negative correlations (< -0.70) are found between nox and dis (r = -0.77), indus and dis (r = -0.71), age and dis (r = -0.75), and lstat and medv (r = -0.74).
+
+Let's next standadize the data and see how the variables change.
+
+
+```{r}
+#Standardizing the data set
+boston_scaled <- scale(Boston)
+
+# class of the boston_scaled object
+class(boston_scaled)
+
+# change the object to data frame
+boston_scaled <- as.data.frame(boston_scaled)
+
+# summaries of the scaled variables
+summary(boston_scaled)
+sd(boston_scaled$crim)
+sd(boston_scaled$zn)
+
+```
+
+Standardizing the data changed the scale of all variables so that the mean is 0 and standard deviation is 1.
+
+Creating categorical variable of the crime rate variable and removing the continuous crim variable from the data. The new categorical crime variable has 4 categories: low, med_low, med_high and high.
+```{r}
+# create a quantile vector of crim
+bins <- quantile(boston_scaled$crim)
+# create a categorical variable 'crime'
+crime <- cut(boston_scaled$crim, breaks = bins, include.lowest = TRUE, label=c("low", "med_low", "med_high", "high"))
+# look at the table of the new factor crime
+table(crime)
+# remove original crim from the dataset
+boston_scaled <- dplyr::select(boston_scaled, -crim)
+# add the new categorical value to scaled data
+boston_scaled <- data.frame(boston_scaled, crime)
+```
+
+Dividing the data to training set (80% of data) and test set (20% of data). The idea is to fit a linear discriminant analysis in the training data and than predict the classes in the test data in order to see how well the prediction works.
+
+```{r}
+# number of rows in the Boston dataset 
+n <- nrow(boston_scaled)
+
+# choose randomly 80% of the rows
+ind <- sample(n,  size = n * 0.8)
+
+# create train set
+train <- boston_scaled[ind,]
+
+# create test set 
+test <- boston_scaled[-ind,]
+
+```
+
+Next, let's fit a linear discriminant analysis on the train data set using categorical crime variable as the target variable.
+```{r}
+# linear discriminant analysis
+lda.fit <- lda(crime ~ ., data = train)
+
+# print the lda.fit object
+lda.fit
+
+# the function for lda biplot arrows
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+
+# target classes as numeric
+classes <- as.numeric(train$crime)
+
+# plot the lda results
+plot(lda.fit, dimen = 2, col = classes, pch = classes)
+lda.arrows(lda.fit, myscale = 2)
+```
+
+From the plot it can be seen that the variable "rad" (index of accessibility to radial highways) is the most discriminative variable in the discriminant model. Other discriminative variables are nox (nitrogen oxides concentration (parts per 10 million) and zn (proportion of residential land zoned for lots over 25,000 sq.ft). Perhaps all these variables are indicative of a bigger town?
+```{r}
+# save the correct classes from test data
+correct_classes <- test$crime
+
+# remove the crime variable from test data
+test <- dplyr::select(test, -crime)
+
+# predict classes with test data
+lda.pred <- predict(lda.fit, newdata = test)
+
+# cross tabulate the results
+table(correct = correct_classes, predicted = lda.pred$class)
+
+```
+The LDA model predicts very well the "high" cases: all the real "high" cases are predicted as "high" and there are only 2 med_high cases that has been predicted wrongly as "high". Also the "med_low" cases are predicted pretty well: 14 out of 17 cases are predicted right. The model seems to have most problems with predicting the "low" class: 23 out of 34 cases have been predicted right. 
+
+Next, we will run k-means algorithm and investigate the optimal number of clusters in the data set. First, we will run the k-means with 3 clusters, and then we will investigate the optimal number of clusters using  within cluster sum of squares (WCSS).
+
+```{r}
+library("MASS")
+#Standardizing the data set
+boston_scaled2 <- scale(Boston)
+
+# euclidean distance matrix
+dist_eu <- dist(boston_scaled2)
+
+# the summary of the distances
+summary(dist_eu)
+
+# k-means clustering
+km <-kmeans(boston_scaled2, centers = 3)
+
+# plot the Boston dataset with clusters
+pairs(boston_scaled2, col = km$cluster)
+
+#Investigating the optimal number of clusters 
+set.seed(123)
+
+# determine the number of clusters
+k_max <- 10
+
+# calculate the total within sum of squares
+twcss <- sapply(1:k_max, function(k){kmeans(boston_scaled2, k)$tot.withinss})
+
+# visualize the results
+qplot(x = 1:k_max, y = twcss, geom = 'line')
+```
+
+The optimal number of clusters seems to be 2, because the value of total WCSS changes radically there. Let's run the k-means with 2 clusters.
+
+```{r}
+# k-means clustering
+km <-kmeans(boston_scaled2, centers = 2)
+
+# plot the Boston dataset with clusters
+pairs(boston_scaled2, col = km$cluster)
+```
+
+The optimal way of clustering the Boston data is by using 2 clusters. The variable rad (index of accessibility to radial highways) seems to have an effect on the clustering as well as tax (full-value property-tax rate per \$10,000) and zn (proportion of residential land zoned for lots over 25,000 sq.ft).
