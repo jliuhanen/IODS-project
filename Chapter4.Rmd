@@ -4,6 +4,7 @@ author: "Johanna Liuhanen"
 date: "23.11.2021"
 output: html_document
 ---
+# Chapter 4: Clustering and classification
 
 ```{r}
 date()
