@@ -65,5 +65,5 @@ human <- inner_join(hd, gii, by = "country")
 str(human) # 195 observations on 19 variables
 
 #Save the data
-write.table(human,"~/Rstudio_Git/IODS-project/data/alc")
+write.table(human,"~/Rstudio_Git/IODS-project/data/human")
 
