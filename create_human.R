@@ -1,9 +1,11 @@
 #Johanna Liuhanen 
-#28.11.2021
+#28.11.2021 & 29.11.2021
 #R-script for Exercise 4 Data Wrangling
+#R-script for Exercise 5 Data wrangling
 #Data used in the exercise is from the United Nations Development Programme,
 #Human Development Reports
 ###################################################################
+#Exercise 4 Data Wrangling
 
 hd <- read.csv("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/human_development.csv", stringsAsFactors = F)
 
@@ -61,3 +63,7 @@ human <- inner_join(hd, gii, by = "country")
 
 #Checking the structure of joined data
 str(human) # 195 observations on 19 variables
+
+#Save the data
+write.table(human,"~/Rstudio_Git/IODS-project/data/alc")
+
