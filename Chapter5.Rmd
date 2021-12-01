@@ -1,0 +1,48 @@
+---
+title: "Chapter5.Rmd"
+author: "JL"
+date: "30 11 2021"
+output: html_document
+---
+# Chapter 5: Dimensionality Reduction Techniques
+
+```{r}
+library("GGally")
+human <- read.csv("D:/Johanna/Documents/Väitöskirja/Jatko-opinnot/Open data science/Rstudio_Git/IODS-project/data/human.csv", header=TRUE, sep= " ")
+
+str(human)
+summary(human)
+ggpairs(human)
+
+```
+
+The human data includes 8 variables. DISTRIBUTIONS: Most of the variables seem to have skewed distributions: the ratio of labour force participation of females and males (labratio) and life expectancy (lifexp) are negatively skewed, and Gross National Income per capita (gni), maternal mortality (matmor), adolescent birth rate (adobirth) and percent representation in parliament (parlia) are negatively skewed. The ratio of Female and Male populations with secondary education (eduratio) seems to have a (lepto)kurtotic distribution. Expected years of education (expedu) is closest to normal distribution of these variables. Many of the variables have really large ranges in the values. For example, Gross National Income per capita (gni) varies from 581 to 123124, maternal mortality (matmor) varies between 1 and 1100, and adolescent birth rate (adobirth) ranges from 0.60 to 204.80.
+CORRELATIONS: Many of the variables correlate moderately of strongly with each other. The strongest negative correlations that are also statistically significant, are found between life expectancy (lifexp) and maternal mortality (matmor) (r = -0.86), life expectancy (lifexp) and adolescent birth rate (adobirth) (r = -0.73), maternal mortality (matmor) and expected years of education (expedu) (r = -0.74), and expected years of education (expedu) and adolescent birth rate (adobirth) (r = -0.70). The ratio of Female and Male populations with secondary education (eduratio)  correlates negatively with maternal mortality (matmor) (r = -0.66) and adolescent birth rate (adobirth) (r = -0.53) and these correlations are statistically significant. Strongest statistically significant positive correlations are found between expected years of education (expedu) and life expectancy (lifexp) (r = 0.79), and adolescent birth rate (adobirth) and maternal mortality (matmor) (r = 0.76). The ratio of Female and Male populations with secondary education (eduratio)  correlates positively and statistically significantly with life expectancy (lifexp) (r = 0.58), expected years of education (expedu) (r = 0.59), and Gross National Income per capita (gni) (r = 0.43). Gross National Income per capita (gni) correlates positively with life expectancy (lifexp) (r = 0.63), and expected years of education (expedu) (r = 0.62) and these correlations are statistically significant.
+
+Next, we will run a principal component analysis on the data and draw a biplot of the results. First, we will run the PCA wihtout standardizing the data. Then, we will standardize the data and run the PCA again.
+
+```{r, warning =FALSE}
+#PCA with unstandardized data
+#principal component analysis (with the SVD method)
+pca_human <- prcomp(human)
+
+#Summary of the results
+summary(pca_human)
+
+# draw a biplot of the principal component representation and the original variables
+biplot(pca_human, choices = 1:2, cex = c(0.5, 0.8), col = c("grey50", "blue"))
+
+#PCA with standardized data
+# standardize the variables
+human_std <- scale(human)
+
+# print out summaries of the standardized variables
+summary(human_std)
+
+# perform principal component analysis (with the SVD method)
+pca_human <- prcomp(human_std)
+
+# draw a biplot of the principal component representation and the original variables
+biplot(pca_human, choices = 1:2, cex = c(0.5, 0.8), col = c("grey50", "blue"))
+
+```

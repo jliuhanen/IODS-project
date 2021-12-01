@@ -67,3 +67,80 @@ str(human) # 195 observations on 19 variables
 #Save the data
 write.table(human,"~/Rstudio_Git/IODS-project/data/human")
 
+##########################################################################
+#Exercise 5 Data Wrangling
+
+#Loading the data
+human <- read.table("human", header=TRUE)
+
+#Exploring the dimensions ane structure of the data
+dim(human)
+str(human)
+
+#The human data used in the exercise is from the United Nations Development 
+#Programme, Human Development Reports. It contains 195 observations on 19 
+#variables, of which 13 are numerical, 4 are integers, and 2 are character
+#variables. The variables include country, rank of Human Development Index (HDI)
+#(hdirank), Human Development Index (hdi), life expectancy at birth (lifexp),
+#expected years of education (expedu),mean years of education (meanedu), Gross
+#National Income (GNI) per capita (gni), Gross National #Income per capita rank 
+#minus HDI rank (gni_hdi), rank of Gender Inequality Index (GII) (giirank),
+#Gender Inequality Index (GII)(gii), maternal mortality ratio (matmor), 
+#adolescent birth rate (adobirth), percent representation in parliament (parlia),
+#population with secondary education for males (edu2M) and females (edu2F), 
+#labour force participation for males (labM) and females (labF).
+
+#The variable gni is a character variable although it contains numbers. 
+#Transforming gni to numeric
+
+library(stringr)
+
+human$gni <- str_replace(human$gni, pattern=",", replace ="") %>% as.numeric
+
+#Selecting columns to keep in the data
+keep <- c("country", "eduratio", "labratio", "lifexp", "expedu", "gni", 
+          "matmor", "adobirth", "parlia")
+
+# selecting the 'keep' columns
+human <- select(human, one_of(keep))
+
+#Removing missing values from the data
+# print out a completeness indicator of the 'human' data
+complete.cases(human)
+
+# print out the data along with a completeness indicator as the last column
+data.frame(human[-1], comp = complete.cases(human))
+
+# filter out all rows with NA values
+human_ <- filter(human, complete.cases(human))
+
+#Checking how many observations are left
+str(human_) # 162 observations on 9 variables
+
+#Checking countries and removing observations that are not countries
+#the last 10 observations
+tail(human_, 10)
+
+# last indice we want to keep
+last <- nrow(human_) - 7
+
+# choose everything until the last 7 observations
+human_ <- human_[1:last, ]
+
+# add countries as rownames
+rownames(human_) <- human_$country
+
+# remove the Country variable
+human_ <- select(human_, -country)
+
+#Checking the structure of the data
+str(human_) # 155 observations on 8 variables
+head(human_) # countries are rownames
+
+#Save the data
+write.csv(human_,"human.csv")
+
+#Checking the data
+human <- read.csv("data/human.csv", header=TRUE, sep= " ")
+str(human)
+head(human)
