@@ -8,6 +8,9 @@ output: html_document
 
 ```{r}
 library("GGally")
+library("dplyr")
+
+
 human <- read.csv("D:/Johanna/Documents/Väitöskirja/Jatko-opinnot/Open data science/Rstudio_Git/IODS-project/data/human.csv", header=TRUE, sep= " ")
 
 str(human)
@@ -16,7 +19,10 @@ ggpairs(human)
 
 ```
 
-The human data includes 8 variables. DISTRIBUTIONS: Most of the variables seem to have skewed distributions: the ratio of labour force participation of females and males (labratio) and life expectancy (lifexp) are negatively skewed, and Gross National Income per capita (gni), maternal mortality (matmor), adolescent birth rate (adobirth) and percent representation in parliament (parlia) are negatively skewed. The ratio of Female and Male populations with secondary education (eduratio) seems to have a (lepto)kurtotic distribution. Expected years of education (expedu) is closest to normal distribution of these variables. Many of the variables have really large ranges in the values. For example, Gross National Income per capita (gni) varies from 581 to 123124, maternal mortality (matmor) varies between 1 and 1100, and adolescent birth rate (adobirth) ranges from 0.60 to 204.80.
+The human data includes 155 observations on 8 variables. 
+
+DISTRIBUTIONS: Most of the variables seem to have skewed distributions: the ratio of labour force participation of females and males (labratio) and life expectancy (lifexp) are negatively skewed, and Gross National Income per capita (gni), maternal mortality (matmor), adolescent birth rate (adobirth) and percent representation in parliament (parlia) are negatively skewed. The ratio of Female and Male populations with secondary education (eduratio) seems to have a (lepto)kurtotic distribution. Expected years of education (expedu) is closest to normal distribution of these variables. Many of the variables have really large ranges in the values. For example, Gross National Income per capita (gni) varies from 581 to 123124, maternal mortality (matmor) varies between 1 and 1100, and adolescent birth rate (adobirth) ranges from 0.60 to 204.80.
+
 CORRELATIONS: Many of the variables correlate moderately of strongly with each other. The strongest negative correlations that are also statistically significant, are found between life expectancy (lifexp) and maternal mortality (matmor) (r = -0.86), life expectancy (lifexp) and adolescent birth rate (adobirth) (r = -0.73), maternal mortality (matmor) and expected years of education (expedu) (r = -0.74), and expected years of education (expedu) and adolescent birth rate (adobirth) (r = -0.70). The ratio of Female and Male populations with secondary education (eduratio)  correlates negatively with maternal mortality (matmor) (r = -0.66) and adolescent birth rate (adobirth) (r = -0.53) and these correlations are statistically significant. Strongest statistically significant positive correlations are found between expected years of education (expedu) and life expectancy (lifexp) (r = 0.79), and adolescent birth rate (adobirth) and maternal mortality (matmor) (r = 0.76). The ratio of Female and Male populations with secondary education (eduratio)  correlates positively and statistically significantly with life expectancy (lifexp) (r = 0.58), expected years of education (expedu) (r = 0.59), and Gross National Income per capita (gni) (r = 0.43). Gross National Income per capita (gni) correlates positively with life expectancy (lifexp) (r = 0.63), and expected years of education (expedu) (r = 0.62) and these correlations are statistically significant.
 
 Next, we will run a principal component analysis on the data and draw a biplot of the results. First, we will run the PCA wihtout standardizing the data. Then, we will standardize the data and run the PCA again.
@@ -30,7 +36,7 @@ pca_human <- prcomp(human)
 summary(pca_human)
 
 # draw a biplot of the principal component representation and the original variables
-biplot(pca_human, choices = 1:2, cex = c(0.5, 0.8), col = c("grey50", "blue"))
+biplot(pca_human, choices = 1:2, cex = c(0.5, 0.8), col = c("grey50", "blue"), caption = 'Results on principal components analysis without standardizing the data first')
 
 #PCA with standardized data
 # standardize the variables
@@ -40,9 +46,145 @@ human_std <- scale(human)
 summary(human_std)
 
 # perform principal component analysis (with the SVD method)
-pca_human <- prcomp(human_std)
+pca_human_std <- prcomp(human_std)
+
+#Summary of the results
+summary(pca_human_std)
 
 # draw a biplot of the principal component representation and the original variables
-biplot(pca_human, choices = 1:2, cex = c(0.5, 0.8), col = c("grey50", "blue"))
+biplot(pca_human_std, choices = 1:2, cex = c(0.5, 0.8), col = c("grey50", "blue"), caption = 'Results on principal components analysis with standardized data')
 
 ```
+
+(NOTE: For some reason the "caption" argument is not working in the plots!?)
+
+RESULTS OF THE PCA ANALYSES: The result of principal component analysis of unstandardized data is very different from the result of standardized data. The variable "gni" dominates the result of the unstandardized data, probably because it has so much larger range and variation than the other variables. The first component (PC1) explains already 99,99% of the variation in the unstandardized data, and the Gross National Income per capita (gni) seems to be the most relevant variable. 
+
+The result of standardized data has also other relevant variables that have an importance on the components. The first two components explain 53.6% (PC1) and 16.2% (PC2) of the variation in the data (together almost 70% of the variation). There are 6 variables that are relevant for the PC1 and 2 variables that are relevant for the PC2: in the high end of PC1 there are countries that have high maternal morbidity and adolescent birth rate. In the low end of PC1 there are countries that have high expected years of education, high life expectancy at birth,  high Gross National Income per capita and high ratio of Female and Male populations with secondary education. In the high end of PC 2 there are countries that have high percent of representation in parliament and high ratio of labour force participation of females and males. 
+
+INTERPRETATON OF THE FIRST TWO COMPONENTS: 
+
+PC1 seems to separate rich and developed countries from poorer and less developed countries, since the variables relevant for this component are maternal morbidity, adolescent birth rate, expected years of education,  life expectancy at birth,  Gross National Income per capita and ratio of Female and Male populations with secondary education, so that high scores on this component reflect high maternal morbidity and adolescent birth rate, and low values on the other variables, and low scores on this component reflects high expected years of education,  life expectancy at birth,  Gross National Income per capita and ratio of Female and Male populations with secondary education (meaning that men and women have equally or almost equally secondary education), and low scores on the other two variables. Rich and developed countries score low on PC1 and poorer and less developed countries score higher. 
+
+PC2 seems to separate "democratic" countries from more conservative countries. In the high end of this component are countries that have equally or almost equally men and women in the labour force and the parliament represents the people of the country well. In the low end of this component are countries, in which women are not working and the parliament is not representing the people of the country that well.
+
+
+MULTIPLE CORRESPONDENCE ANALYSIS ON TEA DATA
+
+Next, we will run a multiple correspondence analysis on the tea data, which can be found from the "FactoMineR" package. First, we will load the tea data in and explore its structure.
+
+```{r}
+library("FactoMineR")
+data(tea) #Load the tea data
+dim(tea) #Dimensions
+str(tea) #Structure
+
+#Visualization with bar plots (because most of the variables are binary)
+colnames(tea)
+counts1 <- table(tea$breakfast)
+counts2 <- table(tea$tea.time)
+counts3 <- table(tea$evening)
+counts4 <- table(tea$lunch)
+counts5 <- table(tea$dinner)
+counts6 <- table(tea$always)
+counts7 <- table(tea$tearoom)
+counts8 <- table(tea$friends)
+counts9 <- table(tea$resto)
+counts10 <- table(tea$pub)
+counts11 <- table(tea$Tea)
+counts12 <- table(tea$How)
+counts13 <- table(tea$sugar)
+counts14 <- table(tea$how)
+counts15 <- table(tea$where)
+counts16 <- table(tea$price)
+counts17 <- table(tea$age)
+counts18 <- table(tea$sex)
+counts19 <- table(tea$SPC)
+counts20 <- table(tea$Sport)
+counts21 <- table(tea$age_Q)
+counts22 <- table(tea$frequency)
+counts23 <- table(tea$escape.exoticism)
+counts24 <- table(tea$spirituality)
+counts25 <- table(tea$healthy)
+counts26 <- table(tea$diuretic)
+counts27 <- table(tea$friendliness)
+counts28 <- table(tea$iron.absorption)
+counts29 <- table(tea$feminine)
+counts30 <- table(tea$sophisticated)
+counts31 <- table(tea$slimming)
+counts32 <- table(tea$exciting)
+counts33 <- table(tea$relaxing)
+counts34 <- table(tea$effect.on.health)
+counts35 <- table(tea$home)
+counts36 <- table(tea$work)
+
+par(mfrow=c(2,2))
+barplot(counts1, main="Breakfast")
+barplot(counts2, main="Tea time")
+barplot(counts3, main="Evening")
+barplot(counts4, main="Lunch")
+barplot(counts5, main="Dinner")
+barplot(counts6, main="Always")
+barplot(counts7, main="Tearoom")
+barplot(counts8, main="Friends")
+barplot(counts9, main="Resto")
+barplot(counts10, main="pub")
+barplot(counts11, main="Tea")
+barplot(counts12, main="How")
+barplot(counts13, main="sugar")
+barplot(counts14, main="how")
+barplot(counts15, main="where")
+barplot(counts16, main="price")
+barplot(counts17, main="age")
+barplot(counts18, main="sex")
+barplot(counts19, main="SPC")
+barplot(counts20, main="Sport")
+barplot(counts21, main="age_Q")
+barplot(counts22, main="frequency")
+barplot(counts23, main="escape.exoticism")
+barplot(counts24, main="spirituality")
+barplot(counts25, main="healthy")
+barplot(counts26, main="diuretic")
+barplot(counts27, main="friendliness")
+barplot(counts28, main="iron.absorption")
+barplot(counts29, main="feminine")
+barplot(counts30, main="sophisticated")
+barplot(counts31, main="slimming")
+barplot(counts32, main="exciting")
+barplot(counts33, main="relaxing")
+barplot(counts34, main="effect.on.health")
+barplot(counts35, main="home")
+barplot(counts36, main="work")
+
+
+```
+
+The tea data has 300 observations on 36 variables. Most of the variables are dichotomous. Next, we will run a multiple correspondence analysis on  selected columns of the data. The selected variables are: "Tea", "How", "how", "sugar", "where", "tearoom", "healthy", "sophisticated", "relaxing".
+
+```{r}
+#Selecting the columns for the multiple correspondence analysis
+
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "tearoom", "healthy", "sophisticated", "relaxing")
+
+# select the 'keep_columns' to create a new dataset
+tea_time <- select(tea, one_of(keep_columns))
+
+# look at the structure of the data
+str(tea_time)
+
+# multiple correspondence analysis
+mca <- MCA(tea_time, graph = FALSE)
+
+# summary of the model
+summary(mca)
+
+# visualize MCA
+plot(mca, invisible=c("ind"), habillage = "quali")
+
+```
+
+The multiple correspondence analysis on the selected columns of the tea data results in 14 dimensions, which together explain 100% variance of the data. The first dimension explains 13.6% of the variance and the second dimension 11.8%, and together these two dimensions explain 25.4% of the variance of the data. 
+
+The first dimension separates people on the basis of the variables: where (they buy their tea), whether or not they think drinking tea is sophisticated, how they drink their tea (with milk, or other), do they drink tea in a tearoom, and how they buy their tea (teabags or unpackaged). In the low end of dimension 1 are people, who buy their tea in tea bags from a chain store, don't think drinking tea is sophisticated and do not use tearooms, while in the high end people at least sometimes buy their tea from a tea shop and unpackaged, use tearooms and think drinking tea is sophisticated. 
+
+The second dimension separates people on the basis of the variables: how they buy their tea (teabags or unpackaged), where (they buy their tea), which tea they like to drink, and how they drink their tea (with milk, or other). In the high end of dimension 2 are people who buy their tea unpackaged from a teashop, and who like green tea (over black or Earl grey). In the low end are people, who buy their tea from tea shop and chain store and as teabags and unpackaged, and who use "other" with their tea (over milk, lemon and sugar).
