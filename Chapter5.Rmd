@@ -167,7 +167,7 @@ The tea data has 300 observations on 36 variables. Most of the variables are dic
 keep_columns <- c("Tea", "How", "how", "sugar", "where", "tearoom", "healthy", "sophisticated", "relaxing")
 
 # select the 'keep_columns' to create a new dataset
-tea_time <- select(tea, one_of(keep_columns))
+tea_time <- dplyr::select(tea, one_of(keep_columns))
 
 # look at the structure of the data
 str(tea_time)
