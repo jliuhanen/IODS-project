@@ -7,7 +7,7 @@ output: html_document
 
 # Chapter 6: Analysis of longitudinal data
 
-In this exercise, we are first going to analyse longitudinal data using the dataset called rats. Rats is a nutrition study conducted in three groups of rats. The three groups were on different diets and each animal's body weight was recorded approximately weekly during a 9 week period. In the analyses, we are going to examine are the different diets having a statistically significant effect on the rats' weight.
+In this exercise, we are first going to analyse longitudinal data using the dataset called rats. Rats is a nutrition study conducted in three groups of rats. The three groups were on different diets and each animal's body weight was recorded approximately weekly during a 9 week period. In the analyses, we are going to examine whether the different diets have a statistically significant effect on the rats' weights.
 
 First, we are going to explore the data set graphically.
 
@@ -26,7 +26,7 @@ str(ratsL)
 ratsL$ID <- factor(ratsL$ID)
 ratsL$Group <- factor(ratsL$Group)
 
-#Drawing the first plot of the data set using standardized weight
+#Drawing the first plot of the data set using unstandardized weight
 ggplot(ratsL, aes(x = Time, y = Weight, group = ID)) +
   geom_line(aes(color = Group)) +
   scale_x_continuous(name = "Time (days)", breaks = seq(0, 60, 10)) +
@@ -127,4 +127,94 @@ anova(fit)
 
 ```
 
-In the analysis of variance we examined whether baseline (weight) and Group had a statistically significant effect on the mean weight of rats. The degrees of freedom (df) tels us that there were 3 groups in total. F value is the test statistic calculated for baseline and Group, and the Pr(>F) column tells us whether the effect of baseline of Group is statistically significant (if we use alpha-level of 0.05, then the p-values < 0.05 are statistically significant). Baseline has a statistically significant effect on the maen weight of rats, but Group does not (although it is close of being significant). So, we conclude that the different diets did not have an effect on the rats' weights. In other words, whether the rat belonged to group 1, 2 or 3, did not affect its weight.
+In the analysis of variance we examined whether baseline (weight) and Group had a statistically significant effect on the mean weight of rats. The degrees of freedom (df) tell us that there were 3 groups in total. F value is the test statistic calculated for baseline and Group, and the Pr(>F) column tells us whether the effect of baseline or Group is statistically significant (if we use alpha-level of 0.05, then the p-values < 0.05 are statistically significant). Baseline has a statistically significant effect on the mean weight of rats, but Group does not (although it is close of being significant). So, we conclude that the different diets did not have an effect on the rats' weights. In other words, whether the rat belonged to group 1, 2 or 3, did not affect its weight.
+
+
+ANALYSIS OF THE BPRS DATA
+In the second part of this exercise, we are going to analyze another longitudinal dataset, the bprs data. Bprs is a dataset of clinical trial of 40 males, who were randomly assigned to two treatment groups and assessed with brief psychiatric rating scale (BPRS) weekly during a 8 week period.
+First, we will explore the data graphically.
+
+```{r}
+#Activating libraries needed
+library(lme4)
+
+#Reading the data into R in long form, and checking the dimensions and structure of the data.
+bprsL <- read.table("data/bprsL.txt")
+#dim(bprsL)
+#str(bprsL)
+
+#Converting categorical variables to factors (treatment & subject)
+bprsL$treatment <- factor(bprsL$treatment)
+bprsL$subject <- factor(bprsL$subject)
+
+# Draw the plot 
+ggplot(bprsL, aes(x = week, y = bprs, linetype = subject)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ treatment, labeller = label_both) +
+  theme(legend.position = "none") + 
+  scale_y_continuous(limits = c(min(bprsL$bprs), max(bprsL$bprs)))
+```
+
+In this first plot every line represents one individual and his measurements on bprs during the 8 week period. On the left is treatment group 1 and on the right is treatment group 2. On the basis of this figure it seems that in treatment group 1 the bprs scores tend to get smaller during the 8 week period, but the same is not true, at least as much, in the treatment group 2.
+
+```{r}
+
+#Drawing a plot
+ggplot(bprsL, aes(x = week, y = bprs, linetype = subject)) +
+  geom_line(aes(color = treatment))
+```
+
+In the second plot, all the subjects are depicted in the same plot, and, again every line represents one subject in the dataset. The different colours represent treatment groups 1 and 2. It is difficult to see from this figure, whether treatment has an effect on the outcome (bprs).
+
+Next, we will run regression analysis on the data.
+First, we will run a basic regression model.
+
+```{r}
+
+# create a regression model bprs_reg
+bprs_reg <- lm(bprs ~ week + treatment, data = bprsL)
+
+# print out a summary of the model
+summary(bprs_reg)  
+```
+
+In the basic regression model week seems to be a significant predictor of bprs, but treatment does not. In other words, time (week) affects significantly the bprs scores, but the two treatments do not differ in their effects.
+
+Next, we will run a random intercept model, and, a random intercept and random slope model, and compare these models.
+
+```{r}
+
+# Create a random intercept model
+bprs_ref <- lmer(bprs ~ week + treatment + (1 | subject), data = bprsL, REML = FALSE)
+
+# Print the summary of the model
+summary(bprs_ref)
+
+# create a random intercept and random slope model
+bprs_ref1 <- lmer(bprs ~ week + treatment + (week | subject), data = bprsL, REML = FALSE)
+
+# print a summary of the model
+summary(bprs_ref1)
+
+# perform an ANOVA test on the two models
+anova(bprs_ref1, bprs_ref)
+```
+The model comparisons show that bringing the slope to the model improves the model significantly (the p-value for Chisq test is < 0.05). The AIC and BIC values are close to each other in both of the models (the model with smaller AIC and BIC values are usually preferred).
+
+Next, we will add an interaction term into the model (week*treatment). 
+
+```{r}
+
+# create a random intercept and random slope model
+bprs_ref2 <- lmer(bprs ~ week * treatment + (week | subject), data = bprsL, REML = FALSE)
+
+# print a summary of the model
+summary(bprs_ref2)
+
+# perform an ANOVA test on the two models
+anova(bprs_ref2, bprs_ref1)
+
+```
+
+Adding an interaction term to the model did not significantly improve the model (p-value for Qhisq test is > 0.05), so including the interaction to the model is not a good idea. The t-vallue for the interaction term is not very big, so it is not likely that it is significant. In all, based on the regression models it seems that week is a significant predictor of bprs, but treatment is not. 
