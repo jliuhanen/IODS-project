@@ -7,34 +7,35 @@ output: html_document
 
 # Chapter 6: Analysis of longitudinal data
 
+In this exercise, we are first going to analyse longitudinal data using the dataset called rats. Rats is a nutrition study conducted in three groups of rats. The three groups were on different diets and each animal's body weight was recorded approximately weekly during a 9 week period. In the analyses, we are going to examine are the different diets having a statistically significant effect on the rats' weight.
+
+First, we are going to explore the data set graphically.
+
 ```{r}
+#First activating the libraries needed in this exercise
 library(ggplot2)
 library(tidyr)
 library(dplyr)
 
+#Reading the data into R in long form, and checking the dimensions and structure of the data.
 ratsL <- read.table("data/ratsL.txt")
 dim(ratsL)
 str(ratsL)
 
-# rats: Convert categorical variables to factors (ID & Group)
+#Converting categorical variables to factors (ID & Group)
 ratsL$ID <- factor(ratsL$ID)
 ratsL$Group <- factor(ratsL$Group)
 
+#Drawing the first plot of the data set using standardized weight
 ggplot(ratsL, aes(x = Time, y = Weight, group = ID)) +
   geom_line(aes(color = Group)) +
   scale_x_continuous(name = "Time (days)", breaks = seq(0, 60, 10)) +
   scale_y_continuous(name = "Weight (grams)") +
   theme(legend.position = "top")
+```
 
-
-# Draw the plot (from data camp) not working
-#ggplot(ratsL, aes(x = Time, y = rats, linetype = ID)) +
- # geom_line() +
-  #scale_linetype_manual(values = rep(1:10, times=4)) +
-  #theme(legend.position = "none") + 
-  #scale_y_continuous(limits = c(min(ratsL$rats), max(ratsL$rats)))
-
-
+In this first figure each rat is represented by one line. The colour of the line indicates the group the rat belongs to. From the plot we can see that the rats in Group 1 (red lines) are clearly lighter than rats in the other two groups. Rats in Group 2 (green lines) seems to be in the middle (expect for one rat, which is the heaviest of all), and Group 3 (blue lines) rats the heaviest. These differences in weight are present already at the baseline. Next, we will draw a similar figure with standardized weights.
+```{r}
 # Standardise the variable Weight
 ratsL <- ratsL %>%
   group_by(Time) %>%
@@ -51,3 +52,79 @@ ggplot(ratsL, aes(x = Time, y = stdweight, group = ID)) +
   scale_y_continuous(name = "Weight (grams)") +
   theme(legend.position = "top")
 ```
+
+After standardizing the weight variable, the figure looks very similar to the first figure with unstandardized weights. The biggest difference might be that the rats' weight does not seem to increase bytime any more, as it appeared to do in the first figure.
+
+Next, we will draw a plot with group mean values (and standard errors).
+
+```{r}
+# Number of subjects (per group):
+n <- 20
+
+# Summary data with mean and standard error 
+ratsLS <- ratsL %>%
+  group_by(Group, Time) %>%
+ summarise( mean = mean(Weight), se = sd(Weight)/sqrt(n) ) %>%
+  ungroup()
+
+# Plot the mean profiles
+ggplot(ratsLS, aes(x = Time, y = mean, linetype = Group, shape = Group)) +
+  geom_line() +
+  scale_linetype_manual(values = c(1,2,3)) +
+  geom_point(size=3) +
+  scale_shape_manual(values = c(1,2,3)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se, linetype="1"), width=0.3) +
+  theme(legend.position = c(0.9,0.5)) +
+  scale_y_continuous(name = "mean(Weight) +/- se(Weight)")
+```
+
+In this figure, each of the three groups are represented by one line (which represents the mean weight of that group over time). Means and standard errors are drawn as symbols and error bars around the means in the figure. From this figure we can see that Group 1 has clearly the lightest rats. Group 2 and group 3 are more close to each other, but the rats in group 3 have higher mean weight than rats in group 2. 
+
+Next, we will draw a boxplot (in order to see whether there are outliers in the data).
+
+```{r}
+#Create a boxplot
+
+# Create a summary data by Group and subject with mean as the summary variable (ignoring baseline week 0).
+ratsL8s <- ratsL %>%
+  filter(Time > 1) %>%
+  group_by(Group, ID) %>%
+  summarise( mean=mean(Weight) ) %>%
+  ungroup()
+
+# Glimpse the data
+#glimpse(ratsL8s)
+
+# Draw a boxplot of the mean versus treatment
+ggplot(ratsL8s, aes(x = Group, y = mean)) +
+  geom_boxplot() +
+  stat_summary(fun = "mean", geom = "point", shape=23, size=4, fill = "white") +
+  scale_y_continuous(name = "mean(Weight)")
+
+```
+
+The three groups of rats are represented as boxes in the figure. From the boxplot we can see that there are outliers in the data. In every group, there is one outlier (Group 1 < 250 g, Group 2 > 550 g, Group 3 < 500 g). These outliers could be removed before further analysis of the data, because they might bias the conclusions made from the subsequent analysis, for example analysis of covariance. But, because the data is so limited (only 4 rats in Group 2 and Group 3), we will not remove any outliers.
+
+Next, we will examine with analysis of variance, whether the nutrition groups have a statistically significant effect on the rats' weights.
+
+```{r}
+#For this analysis we need also the raw rats data
+rats <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt")
+
+#str(rats)
+
+# Add the baseline from the original data as a new variable to the summary data
+ratsL8s2 <- ratsL8s %>%
+  mutate(baseline = rats$WD1)
+
+#str(ratsL8s2)
+
+# Fit the linear model with the mean as the response 
+fit <- lm(mean ~ baseline + Group, data = ratsL8s2)
+
+# Compute the analysis of variance table for the fitted model with anova()
+anova(fit)
+
+```
+
+In the analysis of variance we examined whether baseline (weight) and Group had a statistically significant effect on the mean weight of rats. The degrees of freedom (df) tels us that there were 3 groups in total. F value is the test statistic calculated for baseline and Group, and the Pr(>F) column tells us whether the effect of baseline of Group is statistically significant (if we use alpha-level of 0.05, then the p-values < 0.05 are statistically significant). Baseline has a statistically significant effect on the maen weight of rats, but Group does not (although it is close of being significant). So, we conclude that the different diets did not have an effect on the rats' weights. In other words, whether the rat belonged to group 1, 2 or 3, did not affect its weight.
