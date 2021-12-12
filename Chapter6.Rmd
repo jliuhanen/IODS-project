@@ -217,4 +217,4 @@ anova(bprs_ref2, bprs_ref1)
 
 ```
 
-Adding an interaction term to the model did not significantly improve the model (p-value for Qhisq test is > 0.05), so including the interaction to the model is not a good idea. The t-vallue for the interaction term is not very big, so it is not likely that it is significant. In all, based on the regression models it seems that week is a significant predictor of bprs, but treatment is not. 
+Adding an interaction term to the model did not significantly improve the model (p-value for Qhisq test is > 0.05), so including the interaction to the model is not a good idea. The t-value for the interaction term is not very big, so it is not likely that it is significant. In all, based on the regression models it seems that week is a significant predictor of bprs, but treatment is not, and there is no significant interaction between week and treatment on the bprs score.
