@@ -1,0 +1,53 @@
+---
+title: "Chapter6.Rmd"
+author: "JL"
+date: "7 12 2021"
+output: html_document
+---
+
+# Chapter 6: Analysis of longitudinal data
+
+```{r}
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+
+ratsL <- read.table("data/ratsL.txt")
+dim(ratsL)
+str(ratsL)
+
+# rats: Convert categorical variables to factors (ID & Group)
+ratsL$ID <- factor(ratsL$ID)
+ratsL$Group <- factor(ratsL$Group)
+
+ggplot(ratsL, aes(x = Time, y = Weight, group = ID)) +
+  geom_line(aes(color = Group)) +
+  scale_x_continuous(name = "Time (days)", breaks = seq(0, 60, 10)) +
+  scale_y_continuous(name = "Weight (grams)") +
+  theme(legend.position = "top")
+
+
+# Draw the plot (from data camp) not working
+#ggplot(ratsL, aes(x = Time, y = rats, linetype = ID)) +
+ # geom_line() +
+  #scale_linetype_manual(values = rep(1:10, times=4)) +
+  #theme(legend.position = "none") + 
+  #scale_y_continuous(limits = c(min(ratsL$rats), max(ratsL$rats)))
+
+
+# Standardise the variable Weight
+ratsL <- ratsL %>%
+  group_by(Time) %>%
+  mutate(stdweight = (Weight - mean(Weight))/sd(Weight) ) %>%
+  ungroup()
+
+# Glimpse the data
+glimpse(ratsL)
+
+#The figure again with standardized weight variables
+ggplot(ratsL, aes(x = Time, y = stdweight, group = ID)) +
+  geom_line(aes(color = Group)) +
+  scale_x_continuous(name = "Time (days)", breaks = seq(0, 60, 10)) +
+  scale_y_continuous(name = "Weight (grams)") +
+  theme(legend.position = "top")
+```
